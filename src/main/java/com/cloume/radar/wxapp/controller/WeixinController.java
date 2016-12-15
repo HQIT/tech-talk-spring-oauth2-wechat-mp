@@ -1,6 +1,7 @@
 package com.cloume.radar.wxapp.controller;
 
 import java.io.IOException;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -11,10 +12,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import me.chanjar.weixin.common.api.WxConsts;
+import me.chanjar.weixin.common.bean.WxJsapiSignature;
 import me.chanjar.weixin.common.exception.WxErrorException;
 import me.chanjar.weixin.mp.api.WxMpConfigStorage;
 import me.chanjar.weixin.mp.api.WxMpMessageRouter;
@@ -81,5 +86,25 @@ public class WeixinController {
 				"t", System.currentTimeMillis()
 				);
 		response.sendRedirect(returnUrl);
+	}
+	
+	/**
+	 * appId, timestamp, nonceStr, signature
+	 * @return JSSDK配置
+	 * @throws WxErrorException
+	 */
+	@ResponseBody @RequestMapping(value = "/jsapisign", method = RequestMethod.POST)
+	public WxJsapiSignature wxJSSdkConfiguration(@RequestBody Map<String, Object> body, HttpServletResponse response) throws WxErrorException{
+		/*wx.config({
+		    debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+		    appId: '', // 必填，公众号的唯一标识
+		    timestamp: , // 必填，生成签名的时间戳
+		    nonceStr: '', // 必填，生成签名的随机串
+		    signature: '',// 必填，签名，见附录1
+		    jsApiList: [] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+		});*/
+		WxJsapiSignature signature = wxMpService.createJsapiSignature(String.valueOf(body.get("url")));
+		
+		return signature;
 	}
 }
