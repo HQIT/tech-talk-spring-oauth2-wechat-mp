@@ -5,8 +5,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 
+import com.cloume.radar.wxapp.wx.message.WxClickEventHandler;
+import com.cloume.radar.wxapp.wx.message.WxEventHandler;
+import com.cloume.radar.wxapp.wx.message.WxMpMessageHandlerImpl;
+import com.cloume.radar.wxapp.wx.message.WxMpMessageInterceptorImpl;
+
+import me.chanjar.weixin.common.api.WxConsts;
 import me.chanjar.weixin.mp.api.WxMpConfigStorage;
 import me.chanjar.weixin.mp.api.WxMpInMemoryConfigStorage;
+import me.chanjar.weixin.mp.api.WxMpMessageHandler;
+import me.chanjar.weixin.mp.api.WxMpMessageInterceptor;
+import me.chanjar.weixin.mp.api.WxMpMessageRouter;
 import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.api.WxMpServiceImpl;
 
@@ -36,5 +45,57 @@ public class WeixinConfiguration {
 		wxService.setWxMpConfigStorage(wxMpConfigStorage());
 		
 		return wxService;
+	}
+	
+	@Bean
+	public WxMpMessageInterceptor wxMpMessageInterceptor(){
+		return new WxMpMessageInterceptorImpl();
+	}
+	
+	@Bean
+	public WxMpMessageHandler wxMpMessageHandler(){
+		return new WxMpMessageHandlerImpl();
+	}
+	
+	public WxMpMessageHandler wxClickEventHandler(String key){
+		return new WxClickEventHandler(key);
+	}
+	
+	public WxMpMessageHandler wxEventHandler(String event){
+		return new WxEventHandler(event);
+	}
+	
+	@Bean @Scope("singleton")
+	public WxMpMessageRouter wxMpMessageRouter(){
+		WxMpMessageRouter router = new WxMpMessageRouter(wxMpService());
+		
+		router
+			.rule()
+			.msgType(WxConsts.XML_MSG_EVENT)
+			.event(WxConsts.EVT_CLICK)
+			.eventKey("V1003")		///听课提问
+			.handler(wxClickEventHandler("V1003"))
+			.next()
+			
+			.rule()
+			.msgType(WxConsts.XML_MSG_EVENT)
+			.event(WxConsts.EVT_SUBSCRIBE)
+			.interceptor(wxMpMessageInterceptor())
+			.handler(wxEventHandler(WxConsts.EVT_SUBSCRIBE))
+			.next()
+			
+			.rule()
+			.msgType(WxConsts.XML_MSG_EVENT)
+			.event(WxConsts.EVT_UNSUBSCRIBE)
+			.interceptor(wxMpMessageInterceptor())
+			.handler(wxEventHandler(WxConsts.EVT_UNSUBSCRIBE))
+			.next()
+			
+			.rule()
+		    .interceptor(wxMpMessageInterceptor())
+		    .handler(wxMpMessageHandler())
+		    .end();
+		
+		return router;
 	}
 }
