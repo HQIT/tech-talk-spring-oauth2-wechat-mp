@@ -1,4 +1,4 @@
-package com.cloume.radar.wxapp.wx.message;
+package com.cloume.radar.wxapp.message;
 
 import java.util.Map;
 
@@ -6,9 +6,8 @@ import me.chanjar.weixin.common.exception.WxErrorException;
 import me.chanjar.weixin.common.session.WxSessionManager;
 import me.chanjar.weixin.mp.api.WxMpMessageHandler;
 import me.chanjar.weixin.mp.api.WxMpService;
-import me.chanjar.weixin.mp.bean.WxMpCustomMessage;
-import me.chanjar.weixin.mp.bean.WxMpXmlMessage;
-import me.chanjar.weixin.mp.bean.WxMpXmlOutMessage;
+import me.chanjar.weixin.mp.bean.message.WxMpXmlMessage;
+import me.chanjar.weixin.mp.bean.message.WxMpXmlOutMessage;
 
 /**
  * 用户点击听课工具中的"我要提问"
@@ -36,7 +35,7 @@ public class WxClickEventHandler implements WxMpMessageHandler {
 			WxSessionManager sm) throws WxErrorException {
 
 		switch(getEventKey()){
-			case "V1003": {
+			/*
 				WxMpCustomMessage.WxArticle article = new WxMpCustomMessage.WxArticle();
 				article.setUrl("http://www.62226222.com.cn");
 				//article.setPicUrl("http://hsvk.cloume.com/hsvk/img/quiz.png");
@@ -49,7 +48,7 @@ public class WxClickEventHandler implements WxMpMessageHandler {
 						.build();
 				
 				service.customMessageSend(msg);
-			} break;
+			*/
 		}
 		
 		return null;

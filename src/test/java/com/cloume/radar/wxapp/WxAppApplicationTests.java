@@ -1,4 +1,4 @@
-package com.cloume.radar;
+package com.cloume.radar.wxapp;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -7,7 +7,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class WxappApplicationTests {
+public class WxAppApplicationTests {
 
 	@Test
 	public void contextLoads() {
