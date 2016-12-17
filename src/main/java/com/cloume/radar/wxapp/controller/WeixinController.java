@@ -1,6 +1,7 @@
 package com.cloume.radar.wxapp.controller;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -35,6 +37,7 @@ public class WeixinController {
 	
 	@Value(value = "${wxapp.baseUrl}") private String wxappBaseUrl;
 	@Value(value = "${client.version}") private String clientVersion;
+	@Value(value = "${client.index}") private String clientIndex;
 	
 	/**
 	 * @param returnUrl urlEncoded and base64 encoded return url
@@ -49,6 +52,11 @@ public class WeixinController {
 			@RequestParam(value = "return") String returnUrl,
 			HttpServletResponse response) throws IOException{
 		
+		if(StringUtils.isEmpty(returnUrl)) {
+			returnUrl = Base64.encodeBase64String(clientIndex.getBytes());
+		}
+		returnUrl = URLEncoder.encode(returnUrl, "utf-8");
+		
 		String url = wxMpService.oauth2buildAuthorizationUrl(
 				String.format("%s/wxoauthcallback?session=%s&return=%s&scope=%s", 
 						wxappBaseUrl, session, returnUrl, scope),
@@ -61,20 +69,25 @@ public class WeixinController {
 	@RequestMapping(value = "/wxoauthcallback")
 	public void wxOAuthCallback(
 			@RequestParam(defaultValue = WxConsts.OAUTH2_SCOPE_BASE) String scope,
-			@RequestParam(defaultValue = "") String openid,
 			@RequestParam(value = "return") String returnUrl,
+			String code,
+			//HttpServletRequest request,
 			HttpServletResponse response)
 			throws IOException, WxErrorException {
 		
+		String openId = "";
 		if(scope.equals(WxConsts.OAUTH2_SCOPE_BASE)) {
+			openId = wxMpService.oauth2getAccessToken(code).getOpenId();
 		}
 		
+		///TODO: set response header?
+		
 		///FIXME: 如何记录已经登录成功?
-
+		
 		returnUrl = new String(Base64.decodeBase64(returnUrl));
 		returnUrl += String.format("%s%s=%s&%s=%s&%s=%s", 
 				returnUrl.contains("?") ? "&" : "?",
-				"openid", openid,
+				"openid", openId,
 				"v", clientVersion,
 				"t", System.currentTimeMillis()
 				);
@@ -87,6 +100,7 @@ public class WeixinController {
 	 * @return JSSDK配置
 	 * @throws WxErrorException
 	 */
+	@CrossOrigin(origins = "*", maxAge = 3600)
 	@ResponseBody @RequestMapping(value = "/jsapisign", method = RequestMethod.POST)
 	public WxJsapiSignature wxJSSdkConfiguration(
 			@RequestBody Map<String, Object> body, 
@@ -100,6 +114,7 @@ public class WeixinController {
 		    jsApiList: [] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
 		});*/
 		WxJsapiSignature signature = wxMpService.createJsapiSignature(String.valueOf(body.get("url")));
+		System.err.printf("JsapiTicket: %s", wxMpService.getJsapiTicket());
 		
 		return signature;
 	}
