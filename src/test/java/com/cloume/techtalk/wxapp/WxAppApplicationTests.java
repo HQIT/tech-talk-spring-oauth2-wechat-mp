@@ -1,4 +1,4 @@
-package com.cloume.radar.wxapp;
+package com.cloume.techtalk.wxapp;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

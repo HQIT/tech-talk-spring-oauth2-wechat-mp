@@ -1,4 +1,4 @@
-package com.cloume.radar.wxapp;
+package com.cloume.techtalk.wxapp;
 
 import java.io.IOException;
 import java.util.Arrays;
